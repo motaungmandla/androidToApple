@@ -23,3 +23,10 @@ jobs:
         with:
           name: app-release
           path: build/app/outputs/flutter-apk/app-release.apk
+	  
+      - name: Push to Releases
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/app/outputs/apk/debug/"
+          tag: v1.0.${{github.run_number}}
+          token: ${{ secrets.TOKEN }}
