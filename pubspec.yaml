@@ -1,7 +1,6 @@
 name: myapp
 description: "A new Flutter project."
 publish_to: 'none'
-
 version: 1.0.0+1
 
 environment:
@@ -10,9 +9,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  provider: ^6.1.2          # ✅ FIXED: top-level dependency
-  url_launcher: ^6.3.0      # ✅ FIXED: top-level dependency
-  share_plus: ^10.1.0       # ✅ FIXED: top-level dependency
+  provider: ^6.1.2
+  url_launcher: ^6.3.0
+  share_plus: ^10.1.0
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
