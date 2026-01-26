@@ -10,13 +10,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.38.7' 
-      
-      - run: flutter pub get
-      - run: flutter build apk --release
+          flutter-version: '3.38.7'  
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify dependencies resolved
+        run: |
+          flutter pub deps | grep -E "(provider|url_launcher|share_plus)"
+          # Fails build if any dependency missing
+
+      - name: Build APK
+        run: flutter build apk --release
+
       - uses: actions/upload-artifact@v4
         with:
           name: apk

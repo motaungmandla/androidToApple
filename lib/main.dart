@@ -1,3 +1,4 @@
+import 'dart:math' as math; // ✅ FIXED: Proper alias to avoid conflict with Random class
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -73,7 +74,7 @@ class Website {
   });
 }
 
-// ===== VISIT TRACKER (SIMPLIFIED) =====
+// ===== VISIT TRACKER =====
 class VisitTracker with ChangeNotifier {
   int totalVisits = 0;
   int totalShares = 0;
@@ -110,7 +111,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // ✅ YOUR REAL SITES + GAMES
   final List<Website> websites = [
     // Professional
     Website(
@@ -192,7 +192,9 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('Motaung Hub', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
-            icon: Icon(themeProvider.themeMode == ThemeMode.dark ? Icons.wb_sunny : Icons.nightlight),
+            icon: Icon(themeProvider.themeMode == ThemeMode.dark 
+                ? Icons.wb_sunny 
+                : Icons.nightlight),
             onPressed: () => themeProvider.toggleTheme(),
           ),
         ],
@@ -329,7 +331,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _launchUrl(String url) async {
-    final uri = Uri.parse(url);
+    final uri = Uri.parse(url.trim()); // ✅ FIXED: Trim here too for safety
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
@@ -341,7 +343,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// ===== SNAKE GAME (Lightweight, <150 lines) =====
+// ===== SNAKE GAME =====
 class SnakeGame extends StatefulWidget {
   const SnakeGame({super.key});
 
@@ -363,22 +365,34 @@ class _SnakeGameState extends State<SnakeGame> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     resetGame();
-    controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
-    controller.repeat();
+    controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 300))
+      ..addListener(() {
+        if (isPlaying) moveSnake();
+      })
+      ..repeat();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose(); // ✅ FIXED: Prevent memory leak
+    super.dispose();
   }
 
   void resetGame() {
-    snake = [const Offset(7, 7)];
-    food = _randomFood();
-    direction = Direction.right;
-    isPlaying = true;
-    score = 0;
+    setState(() {
+      snake = [const Offset(7, 7)];
+      food = _randomFood();
+      direction = Direction.right;
+      isPlaying = true;
+      score = 0;
+    });
   }
 
   Offset _randomFood() {
+    // ✅ FIXED: Use math.Random() instead of broken Random() prefix
     return Offset(
-      (Random().nextDouble() * gridSize).toInt().toDouble(),
-      (Random().nextDouble() * gridSize).toInt().toDouble(),
+      (math.Random().nextDouble() * gridSize).toInt().toDouble(),
+      (math.Random().nextDouble() * gridSize).toInt().toDouble(),
     );
   }
 
@@ -399,9 +413,11 @@ class _SnakeGameState extends State<SnakeGame> with TickerProviderStateMixin {
         newHead = Offset((head.dx + 1) % gridSize, head.dy);
     }
 
-    // Wrap around screen
-    if (newHead.dx < 0) newHead = Offset(gridSize - 1, newHead.dy);
-    if (newHead.dy < 0) newHead = Offset(newHead.dx, gridSize - 1);
+    // Wrap around screen edges
+    newHead = Offset(
+      (newHead.dx + gridSize) % gridSize,
+      (newHead.dy + gridSize) % gridSize,
+    );
 
     // Check self-collision
     if (snake.contains(newHead)) {
@@ -422,6 +438,7 @@ class _SnakeGameState extends State<SnakeGame> with TickerProviderStateMixin {
 
   void _gameOver() {
     isPlaying = false;
+    if (!mounted) return;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -477,15 +494,9 @@ class _SnakeGameState extends State<SnakeGame> with TickerProviderStateMixin {
               },
               child: Container(
                 color: Colors.grey[900],
-                child: AnimatedBuilder(
-                  animation: controller,
-                  builder: (context, child) {
-                    moveSnake();
-                    return CustomPaint(
-                      size: Size(gridSize * cellSize, gridSize * cellSize),
-                      painter: SnakePainter(snake: snake, food: food, cellSize: cellSize),
-                    );
-                  },
+                child: CustomPaint(
+                  size: Size(gridSize * cellSize, gridSize * cellSize),
+                  painter: SnakePainter(snake: snake, food: food, cellSize: cellSize),
                 ),
               ),
             ),
@@ -540,7 +551,7 @@ class SnakePainter extends CustomPainter {
 
 enum Direction { up, down, left, right }
 
-// ===== TIC-TAC-TOE (Bonus!) =====
+// ===== TIC-TAC-TOE =====
 class TicTacToeGame extends StatefulWidget {
   const TicTacToeGame({super.key});
 
@@ -645,6 +656,3 @@ class _TicTacToeGameState extends State<TicTacToeGame> {
     );
   }
 }
-
-// For random food generation
-import 'dart:math' as Random;
