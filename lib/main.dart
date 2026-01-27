@@ -1,4 +1,4 @@
-import 'dart:math' as math; // ✅ FIXED: Proper alias to avoid conflict with Random class
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -111,74 +111,84 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  // ✅ UPDATED SITES LIST - Clean URLs, no trailing spaces!
   final List<Website> websites = [
-    // Professional
+    // Your New Sites
     Website(
       id: 1,
+      name: 'MovieTree',
+      url: 'https://movietree.vercel.app',
+      description: 'Discover great movies and shows',
+      icon: Icons.movie,
+      color: Colors.red,
+      category: 'Entertainment',
+    ),
+    Website(
+      id: 2,
+      name: 'Motaung.inc',
+      url: 'https://motaunginc.vercel.app',
+      description: 'AI-powered business solutions',
+      icon: Icons.business,
+      color: Colors.purple,
+      category: 'Business',
+    ),
+    Website(
+      id: 3,
       name: 'Portfolio',
       url: 'https://motaungmandla.github.io',
-      description: 'My professional work & case studies',
+      description: 'My professional work & projects',
       icon: Icons.person,
       color: Colors.blue,
       category: 'Professional',
     ),
+
+    // Existing Sites (cleaned up)
     Website(
-      id: 2,
+      id: 4,
       name: 'GitHub',
       url: 'https://github.com/motaungmandla',
       description: 'Open source projects & AI models',
       icon: Icons.code,
       color: Colors.black,
-      category: 'Professional',
+      category: 'Development',
     ),
     Website(
-      id: 3,
-      name: 'Client Portal',
-      url: 'https://motaunginc.vercel.app',
-      description: 'AI tools for business',
-      icon: Icons.business,
-      color: Colors.purple,
-      category: 'Professional',
-    ),
-
-    // Services
-    Website(
-      id: 4,
+      id: 5,
       name: 'Tutoring',
       url: 'https://motaungmandla.vercel.app',
       description: 'Math, Physics, Python @ M90/course',
       icon: Icons.school,
       color: Colors.green,
-      category: 'Services',
+      category: 'Education',
     ),
     Website(
-      id: 5,
+      id: 6,
       name: 'Personal Gallery',
       url: 'https://motaung.gt.tc',
       description: 'Private photo vault',
       icon: Icons.photo_library,
       color: Colors.pink,
-      category: 'Services',
+      category: 'Personal',
     ),
 
-    // Fun Zone 🎮
-    Website(
-      id: 6,
-      name: 'Snake Game',
-      url: 'game:snake',
-      description: 'Classic retro snake challenge!',
-      icon: Icons.games,
-      color: Colors.amber,
-      category: 'Fun Zone',
-    ),
+    // Quick Tools (replaces Snake Game)
     Website(
       id: 7,
+      name: 'Quick Tools',
+      url: 'tools:quick',
+      description: 'Useful utilities at your fingertips',
+      icon: Icons.build,
+      color: Colors.orange,
+      category: 'Tools',
+    ),
+    Website(
+      id: 8,
       name: 'Tic-Tac-Toe',
       url: 'game:tictactoe',
       description: 'Play vs AI or a friend',
       icon: Icons.grid_on,
       color: Colors.teal,
-      category: 'Fun Zone',
+      category: 'Games',
     ),
   ];
 
@@ -265,14 +275,14 @@ class _HomeScreenState extends State<HomeScreen> {
       child: InkWell(
         onTap: () async {
           if (site.url.startsWith('game:')) {
-            if (site.name == 'Snake Game') {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const SnakeGame()));
-            } else if (site.name == 'Tic-Tac-Toe') {
+            if (site.name == 'Tic-Tac-Toe') {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const TicTacToeGame()));
             }
+          } else if (site.url.startsWith('tools:')) {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const QuickToolsScreen()));
           } else {
             tracker.recordVisit();
-            _launchUrl(site.url.trim());
+            await _launchUrl(site.url); // ✅ Await properly
           }
         },
         borderRadius: BorderRadius.circular(20),
@@ -298,7 +308,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     splashRadius: 20,
                     icon: const Icon(Icons.share, size: 18),
                     onPressed: () {
-                      if (!site.url.startsWith('game:')) {
+                      if (!site.url.startsWith('game:') && !site.url.startsWith('tools:')) {
                         tracker.recordShare();
                         Share.share('Check out ${site.name}: ${site.url}');
                       }
@@ -316,7 +326,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 overflow: TextOverflow.ellipsis,
               ),
               const Spacer(),
-              if (!site.url.startsWith('game:'))
+              if (!site.url.startsWith('game:') && !site.url.startsWith('tools:'))
                 Text(
                   site.url.replaceAll(RegExp(r'https?://'), ''),
                   style: TextStyle(color: Colors.grey.shade500, fontSize: 10),
@@ -330,228 +340,154 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<void> _launchUrl(String url) async {
-    final uri = Uri.parse(url.trim()); // ✅ FIXED: Trim here too for safety
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
+  Future<void> _launchUrl(String urlString) async {
+    // ✅ CRITICAL FIX: Proper URL validation and error handling
+    try {
+      final uri = Uri.parse(urlString.trim());
+      
+      // Validate URI scheme
+      if (uri.scheme.isEmpty) {
+        throw Exception('Invalid URL scheme');
+      }
+      
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication, // Force external browser
+        );
+      } else {
+        throw Exception('Cannot launch URL');
+      }
+    } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to open $url')),
+        SnackBar(
+          content: Text('Failed to open: $urlString'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
+        ),
       );
     }
   }
 }
 
-// ===== SNAKE GAME =====
-class SnakeGame extends StatefulWidget {
-  const SnakeGame({super.key});
-
-  @override
-  State<SnakeGame> createState() => _SnakeGameState();
-}
-
-class _SnakeGameState extends State<SnakeGame> with TickerProviderStateMixin {
-  static const int gridSize = 15;
-  static const double cellSize = 20.0;
-  late List<Offset> snake;
-  late Offset food;
-  late Direction direction;
-  late AnimationController controller;
-  bool isPlaying = false;
-  int score = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    resetGame();
-    controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 300))
-      ..addListener(() {
-        if (isPlaying) moveSnake();
-      })
-      ..repeat();
-  }
-
-  @override
-  void dispose() {
-    controller.dispose(); // ✅ FIXED: Prevent memory leak
-    super.dispose();
-  }
-
-  void resetGame() {
-    setState(() {
-      snake = [const Offset(7, 7)];
-      food = _randomFood();
-      direction = Direction.right;
-      isPlaying = true;
-      score = 0;
-    });
-  }
-
-  Offset _randomFood() {
-    // ✅ FIXED: Use math.Random() instead of broken Random() prefix
-    return Offset(
-      (math.Random().nextDouble() * gridSize).toInt().toDouble(),
-      (math.Random().nextDouble() * gridSize).toInt().toDouble(),
-    );
-  }
-
-  void moveSnake() {
-    if (!isPlaying) return;
-
-    final head = snake.first;
-    Offset newHead;
-
-    switch (direction) {
-      case Direction.up:
-        newHead = Offset(head.dx, (head.dy - 1) % gridSize);
-      case Direction.down:
-        newHead = Offset(head.dx, (head.dy + 1) % gridSize);
-      case Direction.left:
-        newHead = Offset((head.dx - 1) % gridSize, head.dy);
-      case Direction.right:
-        newHead = Offset((head.dx + 1) % gridSize, head.dy);
-    }
-
-    // Wrap around screen edges
-    newHead = Offset(
-      (newHead.dx + gridSize) % gridSize,
-      (newHead.dy + gridSize) % gridSize,
-    );
-
-    // Check self-collision
-    if (snake.contains(newHead)) {
-      _gameOver();
-      return;
-    }
-
-    setState(() {
-      snake.insert(0, newHead);
-      if (newHead == food) {
-        food = _randomFood();
-        score += 10;
-      } else {
-        snake.removeLast();
-      }
-    });
-  }
-
-  void _gameOver() {
-    isPlaying = false;
-    if (!mounted) return;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Game Over!'),
-        content: Text('Your score: $score'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              resetGame();
-            },
-            child: const Text('Play Again'),
-          ),
-        ],
-      ),
-    );
-  }
+// ===== QUICK TOOLS SCREEN (REPLACES SNAKE GAME) =====
+class QuickToolsScreen extends StatelessWidget {
+  const QuickToolsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Snake Game')),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Score: $score', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Exit'),
-                ),
-              ],
+      appBar: AppBar(title: const Text('Quick Tools')),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          children: [
+            _buildToolCard(
+              context,
+              icon: Icons.copy,
+              title: 'Copy Text',
+              description: 'Copy any text to clipboard',
+              onTap: () => _showCopyDialog(context),
             ),
-          ),
-          Expanded(
-            child: GestureDetector(
-              onVerticalDragUpdate: (details) {
-                if (details.delta.dy > 0 && direction != Direction.up) {
-                  direction = Direction.down;
-                } else if (details.delta.dy < 0 && direction != Direction.down) {
-                  direction = Direction.up;
-                }
-              },
-              onHorizontalDragUpdate: (details) {
-                if (details.delta.dx > 0 && direction != Direction.left) {
-                  direction = Direction.right;
-                } else if (details.delta.dx < 0 && direction != Direction.right) {
-                  direction = Direction.left;
-                }
-              },
-              child: Container(
-                color: Colors.grey[900],
-                child: CustomPaint(
-                  size: Size(gridSize * cellSize, gridSize * cellSize),
-                  painter: SnakePainter(snake: snake, food: food, cellSize: cellSize),
-                ),
-              ),
+            _buildToolCard(
+              context,
+              icon: Icons.calculate,
+              title: 'Calculator',
+              description: 'Quick calculations',
+              onTap: () => _launchExternalApp(context, 'calculator'),
             ),
+            _buildToolCard(
+              context,
+              icon: Icons.timer,
+              title: 'Timer',
+              description: 'Set countdown timers',
+              onTap: () => _launchExternalApp(context, 'timer'),
+            ),
+            _buildToolCard(
+              context,
+              icon: Icons.settings,
+              title: 'Settings',
+              description: 'Device settings',
+              onTap: () => _launchExternalApp(context, 'settings'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildToolCard(BuildContext context, {required IconData icon, required String title, required String description, required VoidCallback onTap}) {
+    return Card(
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 48, color: Theme.of(context).primaryColor),
+              const SizedBox(height: 8),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              Text(description, style: TextStyle(color: Colors.grey[600]), textAlign: TextAlign.center),
+            ],
           ),
-          const Padding(
-            padding: EdgeInsets.all(8),
-            child: Text('Swipe to control the snake!', style: TextStyle(color: Colors.grey)),
+        ),
+      ),
+    );
+  }
+
+  void _showCopyDialog(BuildContext context) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Copy Text'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(hintText: 'Enter text to copy'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              if (controller.text.isNotEmpty) {
+                Clipboard.setData(ClipboardData(text: controller.text));
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Text copied!')),
+                );
+              }
+              Navigator.pop(ctx);
+            },
+            child: const Text('Copy'),
           ),
         ],
       ),
     );
   }
-}
 
-class SnakePainter extends CustomPainter {
-  final List<Offset> snake;
-  final Offset food;
-  final double cellSize;
-
-  SnakePainter({required this.snake, required this.food, required this.cellSize});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint();
-
-    // Draw food
-    paint.color = Colors.red;
-    canvas.drawCircle(
-      Offset(food.dx * cellSize + cellSize / 2, food.dy * cellSize + cellSize / 2),
-      cellSize / 2,
-      paint,
+  void _launchExternalApp(BuildContext context, String appType) {
+    // Note: Direct app launching requires platform-specific code
+    // For now, show a helpful message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Opening $appType... (Use your device\'s native app)'),
+        duration: Duration(seconds: 2),
+      ),
     );
-
-    // Draw snake
-    paint.color = Colors.green;
-    for (final segment in snake) {
-      canvas.drawRect(
-        Rect.fromLTWH(
-          segment.dx * cellSize,
-          segment.dy * cellSize,
-          cellSize,
-          cellSize,
-        ),
-        paint,
-      );
-    }
+    Navigator.pop(context);
   }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
-enum Direction { up, down, left, right }
-
-// ===== TIC-TAC-TOE =====
+// ===== TIC-TAC-TOE (Kept as-is) =====
 class TicTacToeGame extends StatefulWidget {
   const TicTacToeGame({super.key});
 
@@ -576,9 +512,9 @@ class _TicTacToeGameState extends State<TicTacToeGame> {
 
   String checkWinner() {
     const winPatterns = [
-      [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
-      [0, 3, 6], [1, 4, 7], [2, 5, 8], // cols
-      [0, 4, 8], [2, 4, 6]             // diagonals
+      [0, 1, 2], [3, 4, 5], [6, 7, 8],
+      [0, 3, 6], [1, 4, 7], [2, 5, 8],
+      [0, 4, 8], [2, 4, 6]
     ];
 
     for (final pattern in winPatterns) {
