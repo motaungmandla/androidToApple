@@ -1,8 +1,10 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // ← MUST BE HERE
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
+
 
 void main() {
   runApp(
@@ -371,10 +373,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// ===== QUICK TOOLS SCREEN (REPLACES SNAKE GAME) =====
-class QuickToolsScreen extends StatelessWidget {
+// ===== QUICK TOOLS SCREEN (FIXED) =====
+class QuickToolsScreen extends StatefulWidget {
   const QuickToolsScreen({super.key});
 
+  @override
+  State<QuickToolsScreen> createState() => _QuickToolsScreenState();
+}
+
+class _QuickToolsScreenState extends State<QuickToolsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -457,10 +464,10 @@ class QuickToolsScreen extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               if (controller.text.isNotEmpty) {
-                Clipboard.setData(ClipboardData(text: controller.text));
-                if (!mounted) return;
+                await Clipboard.setData(ClipboardData(text: controller.text));
+                if (!context.mounted) return; // ✅ Correct mounted usage
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Text copied!')),
                 );
@@ -475,12 +482,10 @@ class QuickToolsScreen extends StatelessWidget {
   }
 
   void _launchExternalApp(BuildContext context, String appType) {
-    // Note: Direct app launching requires platform-specific code
-    // For now, show a helpful message
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Opening $appType... (Use your device\'s native app)'),
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
       ),
     );
     Navigator.pop(context);
