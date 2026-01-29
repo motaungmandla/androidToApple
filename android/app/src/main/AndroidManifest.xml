@@ -42,4 +42,21 @@
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
+    <queries>
+    <!-- For https:// and http:// URLs -->
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="https" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="http" />
+    </intent>
+    
+    <!-- Optional: for launching specific apps by package -->
+    <package android:name="com.whatsapp" />
+    <package android:name="com.facebook.katana" />
+    <package android:name="com.twitter.android" />
+    <!-- Add other packages as needed -->
+</queries>
 </manifest>
