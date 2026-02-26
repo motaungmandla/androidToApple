@@ -1,4 +1,4 @@
-name: Alliance App
+name: "AllianceApp"
 description: "An Alliance insurance based app."
 publish_to: 'none'
 version: 1.0.0+1
