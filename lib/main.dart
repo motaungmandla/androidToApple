@@ -42,7 +42,8 @@ class AllianceDemoHub extends StatelessWidget {
               foregroundColor: Colors.white,
               elevation: 0,
             ),
-            cardTheme: CardTheme(
+            // ✅ FIX 1: Use CardThemeData instead of CardTheme widget
+            cardTheme: CardThemeData(
               elevation: 2,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -57,10 +58,16 @@ class AllianceDemoHub extends StatelessWidget {
               primary: Colors.red[400]!,
               secondary: Colors.red[300]!,
             ),
-            appBarTheme: AppBarTheme(
-              backgroundColor: Colors.red[800],
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color(0xFF8B0000),
               foregroundColor: Colors.white,
               elevation: 0,
+            ),
+            cardTheme: CardThemeData(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
             ),
           ),
           themeMode: themeProvider.themeMode,
@@ -80,7 +87,7 @@ class Website {
   final IconData icon;
   final Color color;
   final String category;
-  final String? badge; // For special labels like "Live Demo", "Publication"
+  final String? badge;
 
   Website({
     required this.id,
@@ -131,8 +138,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-    final List<Website> websites = [
-    // Alliance Official Site (Added First - Shows Brand Respect)
+  final List<Website> websites = [
     Website(
       id: 0,
       name: 'Alliance Insurance',
@@ -143,8 +149,6 @@ class _HomeScreenState extends State<HomeScreen> {
       category: 'Official',
       badge: 'Official Site',
     ),
-    
-    // AI & NLP Projects
     Website(
       id: 1,
       name: 'AI Chat Assistant',
@@ -174,8 +178,6 @@ class _HomeScreenState extends State<HomeScreen> {
       category: 'Research',
       badge: 'Published',
     ),
-    
-    // ASR Project (Funding Needed)
     Website(
       id: 4,
       name: 'ASR Project',
@@ -186,8 +188,6 @@ class _HomeScreenState extends State<HomeScreen> {
       category: 'AI/ML',
       badge: 'Needs Support',
     ),
-    
-    // API & Development
     Website(
       id: 5,
       name: 'MovieTree API',
@@ -207,8 +207,6 @@ class _HomeScreenState extends State<HomeScreen> {
       color: Colors.black87,
       category: 'Development',
     ),
-    
-    // Professional Contact
     Website(
       id: 7,
       name: 'Contact Me',
@@ -229,7 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            // Alliance-style logo (red triangle/A)
+            // ✅ FIX 2: Replace Icons.sharp with Icons.shield (valid icon)
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
@@ -237,7 +235,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
-                Icons.sharp,
+                Icons.shield,
                 color: Colors.red[700],
                 size: 24,
               ),
@@ -257,7 +255,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
-          // Funding Message Banner
           Container(
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.all(16),
@@ -303,8 +300,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-
-          // Stats Banner
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16),
             padding: const EdgeInsets.all(16),
@@ -322,10 +317,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-
           const SizedBox(height: 8),
-
-          // Grid
           Expanded(
             child: GridView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -497,11 +489,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _launchUrl(String urlString) async {
     try {
       final uri = Uri.parse(urlString.trim());
-      
       if (uri.scheme.isEmpty) {
         throw Exception('Invalid URL scheme');
       }
-      
       if (await canLaunchUrl(uri)) {
         await launchUrl(
           uri,
