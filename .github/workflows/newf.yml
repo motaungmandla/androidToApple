@@ -1,40 +1,32 @@
-name: Flutter iOS Build
-
+name: Flutter Build
 on:
   push:
     branches: [main]
-  workflow_dispatch:  # Manual trigger
+  pull_request:
+    branches: [main]
 
 jobs:
-  build-ios:
-    runs-on: macos-latest  # 🔑 MUST be macOS
-    
+  build:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.38.7'  
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Setup code signing (requires secrets!)
-        env:
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          TEAM_ID: ${{ secrets.TEAM_ID }}
-          BUNDLE_ID: com.motaungmandla.hub
+      - name: Verify dependencies resolved
         run: |
-          # Requires Fastlane Match or manual provisioning setup
-          # ⚠️ This is complex — see notes below
+          flutter pub deps | grep -E "(provider|url_launcher|share_plus)"
+          # Fails build if any dependency missing
 
-      - name: Build iOS IPA
-        run: |
-          flutter build ipa --release \
-            --export-options-plist=ios/export_options.plist
+      - name: Build APK
+        run: flutter build apk --release
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ios-ipa
-          path: build/ios/ipa/*.ipa
+          name: apk
+          path: build/app/outputs/flutter-apk/app-release.apk

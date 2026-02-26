@@ -1,10 +1,9 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // ← MUST BE HERE
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
-
 
 void main() {
   runApp(
@@ -13,36 +12,53 @@ void main() {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => VisitTracker()),
       ],
-      child: const MotaungHub(),
+      child: const AllianceDemoHub(),
     ),
   );
 }
 
-class MotaungHub extends StatelessWidget {
-  const MotaungHub({super.key});
+class AllianceDemoHub extends StatelessWidget {
+  const AllianceDemoHub({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
         return MaterialApp(
-          title: 'Motaung Hub',
+          title: 'Alliance Demo Hub',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
-            primarySwatch: Colors.deepPurple,
+            primarySwatch: Colors.red,
+            primaryColor: Colors.red[700],
             useMaterial3: true,
             scaffoldBackgroundColor: Colors.white,
-            appBarTheme: const AppBarTheme(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.red[700]!,
+              primary: Colors.red[700]!,
+              secondary: Colors.red[400]!,
+            ),
+            appBarTheme: AppBarTheme(
+              backgroundColor: Colors.red[700],
+              foregroundColor: Colors.white,
               elevation: 0,
+            ),
+            cardTheme: CardTheme(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
             ),
           ),
           darkTheme: ThemeData.dark().copyWith(
             scaffoldBackgroundColor: const Color(0xFF121212),
             cardColor: const Color(0xFF1E1E1E),
-            appBarTheme: const AppBarTheme(
-              backgroundColor: Color(0xFF1A1A1A),
+            primaryColor: Colors.red[700],
+            colorScheme: ColorScheme.dark(
+              primary: Colors.red[400]!,
+              secondary: Colors.red[300]!,
+            ),
+            appBarTheme: AppBarTheme(
+              backgroundColor: Colors.red[800],
               foregroundColor: Colors.white,
               elevation: 0,
             ),
@@ -64,6 +80,7 @@ class Website {
   final IconData icon;
   final Color color;
   final String category;
+  final String? badge; // For special labels like "Live Demo", "Publication"
 
   Website({
     required this.id,
@@ -73,6 +90,7 @@ class Website {
     required this.icon,
     required this.color,
     required this.category,
+    this.badge,
   });
 }
 
@@ -94,7 +112,7 @@ class VisitTracker with ChangeNotifier {
 
 // ===== THEME PROVIDER =====
 class ThemeProvider with ChangeNotifier {
-  ThemeMode _themeMode = ThemeMode.system;
+  ThemeMode _themeMode = ThemeMode.light;
 
   ThemeMode get themeMode => _themeMode;
 
@@ -113,84 +131,92 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // ✅ UPDATED SITES LIST - Clean URLs, no trailing spaces!
-  final List<Website> websites = [
-    // Your New Sites
+    final List<Website> websites = [
+    // Alliance Official Site (Added First - Shows Brand Respect)
+    Website(
+      id: 0,
+      name: 'Alliance Insurance',
+      url: 'https://www.alliance.co.ls/',
+      description: 'Visit the official Alliance Insurance Lesotho website',
+      icon: Icons.public,
+      color: Colors.red[700]!,
+      category: 'Official',
+      badge: 'Official Site',
+    ),
+    
+    // AI & NLP Projects
     Website(
       id: 1,
-      name: 'MovieTree',
-      url: 'https://movietree.vercel.app',
-      description: 'Discover great movies and shows',
-      icon: Icons.movie,
-      color: Colors.red,
-      category: 'Entertainment',
+      name: 'AI Chat Assistant',
+      url: 'https://huggingface.co/spaces/MandlaZwane/motaunginc',
+      description: 'Working contextual chatbot - see it in action!',
+      icon: Icons.chat_bubble,
+      color: Colors.red[700]!,
+      category: 'AI/ML',
+      badge: 'Live Demo',
     ),
     Website(
       id: 2,
-      name: 'Motaung.inc',
-      url: 'https://motaunginc.vercel.app',
-      description: 'AI-powered business solutions',
-      icon: Icons.business,
-      color: Colors.purple,
-      category: 'Business',
+      name: 'Bot Demo Video',
+      url: 'https://youtu.be/n6Yh9bJsIkY',
+      description: 'Watch the chatbot handle real conversations',
+      icon: Icons.video_library,
+      color: Colors.red[600]!,
+      category: 'AI/ML',
     ),
     Website(
       id: 3,
-      name: 'Portfolio',
-      url: 'https://motaungmandla.github.io',
-      description: 'My professional work & projects',
-      icon: Icons.person,
-      color: Colors.blue,
-      category: 'Professional',
+      name: 'NLP Publication',
+      url: 'https://youtu.be/GoXAQVTiv8Q?si=6CtfyvFk3OLDCznz',
+      description: 'Published paper & presentation on NLP work',
+      icon: Icons.article,
+      color: Colors.deepPurple,
+      category: 'Research',
+      badge: 'Published',
     ),
-
-    // Existing Sites (cleaned up)
+    
+    // ASR Project (Funding Needed)
     Website(
       id: 4,
-      name: 'GitHub',
-      url: 'https://github.com/motaungmandla',
-      description: 'Open source projects & AI models',
-      icon: Icons.code,
-      color: Colors.black,
-      category: 'Development',
+      name: 'ASR Project',
+      url: 'https://youtu.be/GoXAQVTiv8Q?si=6CtfyvFk3OLDCznz',
+      description: 'Sesotho speech recognition - seeking funding to deploy for our nation',
+      icon: Icons.mic,
+      color: Colors.orange,
+      category: 'AI/ML',
+      badge: 'Needs Support',
     ),
+    
+    // API & Development
     Website(
       id: 5,
-      name: 'Tutoring',
-      url: 'https://motaungmandla.vercel.app',
-      description: 'Math, Physics, Python @ M90/course',
-      icon: Icons.school,
-      color: Colors.green,
-      category: 'Education',
+      name: 'MovieTree API',
+      url: 'https://movietree.vercel.app',
+      description: 'TheMovieDB API integration - proves API expertise',
+      icon: Icons.api,
+      color: Colors.blue,
+      category: 'Development',
+      badge: 'API Demo',
     ),
     Website(
       id: 6,
-      name: 'Personal Gallery',
-      url: 'https://motaung.gt.tc',
-      description: 'Private photo vault',
-      icon: Icons.photo_library,
-      color: Colors.pink,
-      category: 'Personal',
+      name: 'GitHub Profile',
+      url: 'https://github.com/motaungmandla',
+      description: 'Open source projects & AI models',
+      icon: Icons.code,
+      color: Colors.black87,
+      category: 'Development',
     ),
-
-    // Quick Tools (replaces Snake Game)
+    
+    // Professional Contact
     Website(
       id: 7,
-      name: 'Quick Tools',
-      url: 'tools:quick',
-      description: 'Useful utilities at your fingertips',
-      icon: Icons.build,
-      color: Colors.orange,
-      category: 'Tools',
-    ),
-    Website(
-      id: 8,
-      name: 'Tic-Tac-Toe',
-      url: 'game:tictactoe',
-      description: 'Play vs AI or a friend',
-      icon: Icons.grid_on,
-      color: Colors.teal,
-      category: 'Games',
+      name: 'Contact Me',
+      url: 'mailto:maxphin21@gmail.com',
+      description: 'Let\'s discuss how I can add value to Alliance',
+      icon: Icons.email,
+      color: Colors.red[700]!,
+      category: 'Professional',
     ),
   ];
 
@@ -201,7 +227,25 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Motaung Hub', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Row(
+          children: [
+            // Alliance-style logo (red triangle/A)
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.sharp,
+                color: Colors.red[700],
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Text('Alliance Demo Hub', style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
         actions: [
           IconButton(
             icon: Icon(themeProvider.themeMode == ThemeMode.dark 
@@ -213,23 +257,73 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
-          // Stats Banner
+          // Funding Message Banner
           Container(
             margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Colors.deepPurple, Colors.indigo]),
-              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                colors: [Colors.red[700]!, Colors.red[400]!],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.red.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.favorite, color: Colors.white, size: 28),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Building AI for Sesotho Speakers',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'This role would fund my ASR project to deploy inclusive AI models for our nation.',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.95),
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Stats Banner
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.red[50],
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.red[200]!),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildStat(Icons.link, 'Sites', websites.length.toString()),
-                _buildStat(Icons.remove_red_eye, 'Visits', tracker.totalVisits.toString()),
-                _buildStat(Icons.share, 'Shares', tracker.totalShares.toString()),
+                _buildStat(Icons.link, 'Demos', websites.length.toString(), Colors.red[700]!),
+                _buildStat(Icons.remove_red_eye, 'Visits', tracker.totalVisits.toString(), Colors.red[700]!),
+                _buildStat(Icons.share, 'Shares', tracker.totalShares.toString(), Colors.red[700]!),
               ],
             ),
           ),
+
+          const SizedBox(height: 8),
 
           // Grid
           Expanded(
@@ -237,9 +331,9 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 0.9,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 0.85,
               ),
               itemCount: websites.length,
               itemBuilder: (context, index) {
@@ -252,90 +346,148 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildStat(IconData icon, String label, String value) {
+  Widget _buildStat(IconData icon, String label, String value, Color color) {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(12),
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, color: Colors.white),
+          child: Icon(icon, color: color, size: 24),
         ),
-        const SizedBox(height: 6),
-        Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        Text(label, style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12)),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontSize: 11,
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildCard(Website site, VisitTracker tracker) {
     return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: () async {
-          if (site.url.startsWith('game:')) {
-            if (site.name == 'Tic-Tac-Toe') {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const TicTacToeGame()));
-            }
-          } else if (site.url.startsWith('tools:')) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const QuickToolsScreen()));
-          } else {
-            tracker.recordVisit();
-            await _launchUrl(site.url); // ✅ Await properly
-          }
+          tracker.recordVisit();
+          await _launchUrl(site.url);
         },
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: site.color.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: site.badge != null
+                ? LinearGradient(
+                    colors: [
+                      site.color.withOpacity(0.05),
+                      site.color.withOpacity(0.1),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : null,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: site.color.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(site.icon, color: site.color, size: 24),
                     ),
-                    child: Icon(site.icon, color: site.color),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    splashRadius: 20,
-                    icon: const Icon(Icons.share, size: 18),
-                    onPressed: () {
-                      if (!site.url.startsWith('game:') && !site.url.startsWith('tools:')) {
-                        tracker.recordShare();
-                        Share.share('Check out ${site.name}: ${site.url}');
-                      }
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(site.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              Text(
-                site.description,
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const Spacer(),
-              if (!site.url.startsWith('game:') && !site.url.startsWith('tools:'))
+                    const Spacer(),
+                    if (site.badge != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: site.color,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          site.badge!,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 12),
                 Text(
-                  site.url.replaceAll(RegExp(r'https?://'), ''),
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 10),
+                  site.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-            ],
+                const SizedBox(height: 6),
+                Text(
+                  site.description,
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 11,
+                    height: 1.3,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const Spacer(),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        site.category,
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      splashRadius: 18,
+                      icon: Icon(Icons.share, size: 16, color: Colors.grey[600]),
+                      onPressed: () {
+                        tracker.recordShare();
+                        Share.share(
+                          'Check out ${site.name}: ${site.url}\n\nPart of Motaung Mandla\'s Alliance Insurance application portfolio.',
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -343,11 +495,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _launchUrl(String urlString) async {
-    // ✅ CRITICAL FIX: Proper URL validation and error handling
     try {
       final uri = Uri.parse(urlString.trim());
       
-      // Validate URI scheme
       if (uri.scheme.isEmpty) {
         throw Exception('Invalid URL scheme');
       }
@@ -355,7 +505,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (await canLaunchUrl(uri)) {
         await launchUrl(
           uri,
-          mode: LaunchMode.externalApplication, // Force external browser
+          mode: LaunchMode.externalApplication,
         );
       } else {
         throw Exception('Cannot launch URL');
@@ -364,236 +514,11 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to open: $urlString'),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 3),
+          content: Text('Failed to open: ${e.toString()}'),
+          backgroundColor: Colors.red[700],
+          duration: const Duration(seconds: 3),
         ),
       );
     }
-  }
-}
-
-// ===== QUICK TOOLS SCREEN (FIXED) =====
-class QuickToolsScreen extends StatefulWidget {
-  const QuickToolsScreen({super.key});
-
-  @override
-  State<QuickToolsScreen> createState() => _QuickToolsScreenState();
-}
-
-class _QuickToolsScreenState extends State<QuickToolsScreen> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Quick Tools')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: GridView.count(
-          crossAxisCount: 2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          children: [
-            _buildToolCard(
-              context,
-              icon: Icons.copy,
-              title: 'Copy Text',
-              description: 'Copy any text to clipboard',
-              onTap: () => _showCopyDialog(context),
-            ),
-            _buildToolCard(
-              context,
-              icon: Icons.calculate,
-              title: 'Calculator',
-              description: 'Quick calculations',
-              onTap: () => _launchExternalApp(context, 'calculator'),
-            ),
-            _buildToolCard(
-              context,
-              icon: Icons.timer,
-              title: 'Timer',
-              description: 'Set countdown timers',
-              onTap: () => _launchExternalApp(context, 'timer'),
-            ),
-            _buildToolCard(
-              context,
-              icon: Icons.settings,
-              title: 'Settings',
-              description: 'Device settings',
-              onTap: () => _launchExternalApp(context, 'settings'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildToolCard(BuildContext context, {required IconData icon, required String title, required String description, required VoidCallback onTap}) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 48, color: Theme.of(context).primaryColor),
-              const SizedBox(height: 8),
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              Text(description, style: TextStyle(color: Colors.grey[600]), textAlign: TextAlign.center),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showCopyDialog(BuildContext context) {
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Copy Text'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(hintText: 'Enter text to copy'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              if (controller.text.isNotEmpty) {
-                await Clipboard.setData(ClipboardData(text: controller.text));
-                if (!context.mounted) return; // ✅ Correct mounted usage
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Text copied!')),
-                );
-              }
-              Navigator.pop(ctx);
-            },
-            child: const Text('Copy'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _launchExternalApp(BuildContext context, String appType) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Opening $appType... (Use your device\'s native app)'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-    Navigator.pop(context);
-  }
-}
-
-// ===== TIC-TAC-TOE (Kept as-is) =====
-class TicTacToeGame extends StatefulWidget {
-  const TicTacToeGame({super.key});
-
-  @override
-  State<TicTacToeGame> createState() => _TicTacToeGameState();
-}
-
-class _TicTacToeGameState extends State<TicTacToeGame> {
-  List<String> board = List.filled(9, '');
-  bool isPlayerX = true;
-  String winner = '';
-
-  void makeMove(int index) {
-    if (board[index].isEmpty && winner.isEmpty) {
-      setState(() {
-        board[index] = isPlayerX ? 'X' : 'O';
-        isPlayerX = !isPlayerX;
-        winner = checkWinner();
-      });
-    }
-  }
-
-  String checkWinner() {
-    const winPatterns = [
-      [0, 1, 2], [3, 4, 5], [6, 7, 8],
-      [0, 3, 6], [1, 4, 7], [2, 5, 8],
-      [0, 4, 8], [2, 4, 6]
-    ];
-
-    for (final pattern in winPatterns) {
-      if (board[pattern[0]] == board[pattern[1]] &&
-          board[pattern[1]] == board[pattern[2]] &&
-          board[pattern[0]] != '') {
-        return board[pattern[0]];
-      }
-    }
-
-    if (!board.contains('')) return 'Draw';
-    return '';
-  }
-
-  void resetGame() {
-    setState(() {
-      board = List.filled(9, '');
-      isPlayerX = true;
-      winner = '';
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Tic-Tac-Toe')),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              winner.isEmpty
-                  ? 'Player ${isPlayerX ? 'X' : 'O'}\'s turn'
-                  : winner == 'Draw' ? 'It\'s a draw!' : 'Player $winner wins!',
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-          ),
-          Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-              ),
-              itemCount: 9,
-              itemBuilder: (context, index) {
-                return GestureDetector(
-                  onTap: () => makeMove(index),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Center(
-                      child: Text(
-                        board[index],
-                        style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: ElevatedButton(
-              onPressed: resetGame,
-              child: const Text('New Game'),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
